@@ -97,7 +97,7 @@ public class TestRegionClientDecode extends BaseTestRegionClient {
 
   @Test
   public void testRpcAttemptIncrementedOnRetry() throws Exception {
-    // Mocked RPC object with just the portion we're concerned with
+    // Mocked RPC object
     class RpcMock {
       int attempt = 0;
     }
@@ -105,12 +105,9 @@ public class TestRegionClientDecode extends BaseTestRegionClient {
     RpcMock rpc = new RpcMock();
     assertEquals(0, rpc.attempt);  // Ensure the attempt starts at 0
 
-    // Mocking isAlive method
-    PowerMockito.mockStatic(RegionClient.class);
-    when(RegionClient.isAlive()).thenReturn(true);
+    RegionClient region_client = mock(RegionClient.class);
+    when(region_client.isAlive()).thenReturn(true);
 
-    // Instantiate the RegionClient and its RetryTimer class
-    RegionClient region_client = new RegionClient();
     RegionClient.RetryTimer retryTimer = region_client.new RetryTimer();
 
     retryTimer.run(mock(Timeout.class));
