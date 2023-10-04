@@ -75,7 +75,7 @@ import com.stumbleupon.async.Deferred;
 import com.stumbleupon.async.TimeoutException;
 
 @PrepareForTest({ Channels.class, GetRequest.class, 
-  ChannelHandlerContext.class })
+  ChannelHandlerContext.class, RegionClient.class })
 public class TestRegionClientDecode extends BaseTestRegionClient {
   private static final VoidEnum VOID = (VoidEnum)null;
   private static final byte[] ROW = { 0, 0, 1 };
