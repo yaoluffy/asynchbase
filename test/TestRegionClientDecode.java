@@ -97,29 +97,27 @@ public class TestRegionClientDecode extends BaseTestRegionClient {
 
   @Test
   public void testRpcAttemptIncrementedOnRetry() throws Exception {
-    // Mocked RPC object
-    class RpcMock {
-      int attempt = 0;
-    }
-    resetMockClient();  // Set up the mock client
+    // 1. 设置一个RPC对象，使得它抛出一个RecoverableException。
+    HBaseRpc rpc = mock(HBaseRpc.class);
+    when(rpc.getRetryDelay()).thenReturn(0L);  // 0延迟以便立即重试
+    when(rpc.timeoutHandle()).thenReturn(null);
 
-    // Create a mock RPC with an attempt counter
-    final RpcMock rpc = new RpcMock();
-    Whitebox.setInternalState(region_client, "rpc", rpc);
+    // 使用Whitebox来模拟RPC的内部状态和行为，模拟RPC对象能够抛出RecoverableException
+    Whitebox.setInternalState(rpc, "attempt", (byte) 0);
+    Whitebox.setInternalState(region_client, "rpcs_inflight", Collections.singletonMap(0, rpc));
+    when(rpc.deserialize(any(ChannelBuffer.class), anyInt())).thenThrow(new RecoverableException("Mocked recoverable exception"));
 
-    // Get an instance of RetryTimer
-    RegionClient.RetryTimer retryTimer = Whitebox.invokeConstructor(
-            RegionClient.RetryTimer.class, region_client
-    );
+    // 2. 调用decode方法。
+    ChannelBuffer mockBuffer = mock(ChannelBuffer.class);
+    region_client.decode(null, null, mockBuffer, null);
 
-    // Before invoking, attempt should be 0
-    assertEquals(0, rpc.attempt);
+    // 3. 验证RetryTimer.run()的效果。
+    // 验证sendRpc是否被调用
+    verify(region_client, times(1)).sendRpc(rpc);
 
-    // Invoke the run method
-    retryTimer.run(mock(Timeout.class));
-
-    // After invoking, attempt should have incremented
-    assertEquals(1, rpc.attempt);
+    // 验证rpc.attempt是否增加
+    byte newAttempt = Whitebox.getInternalState(rpc, "attempt");
+    assertEquals(1, newAttempt);
   }
   
   @Test
