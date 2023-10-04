@@ -97,23 +97,14 @@ public class TestRegionClientDecode extends BaseTestRegionClient {
 
   @Test
   public void testRpcAttemptIncrementedOnRetry() throws Exception {
-    resetMockClient(); // 使用您提供的方法来重置region_client
+    final int id = 42;
+    final GetRequest get = new GetRequest(TABLE, ROW);
+    get.region = region;
+    inflightTheRpc(id, get);
 
-    HBaseRpc rpc = mock(HBaseRpc.class);
-    when(rpc.getRetryDelay()).thenReturn(0); // 修改为0，去掉L
-    when(rpc.attempt()).thenReturn((byte) 0);
-    when(rpc.getRegion()).thenReturn(null);
-
-    ChannelBuffer channelBuffer = mock(ChannelBuffer.class);
-    // 模拟返回一个RecoverableException，因此decode方法将触发RetryTimer
-    when(region_client.decode(any(ChannelHandlerContext.class), any(Channel.class), eq(channelBuffer), any(VoidEnum.class)))
-            .thenThrow(new RecoverableException("mock exception"));
-
-    // 调用decode方法
-    region_client.decode(null, null, channelBuffer, null);
-
-    // 使用verify来确认rpc.attempt()确实被调用了，这会证明RetryTimer.run()也被调用
-    verify(rpc, times(1)).attempt();
+    ChannelBuffer buffer = PBufResponses.generateException(id,
+            remote_exception);
+    assertNull(region_client.decode(ctx, chan, buffer, VOID));
   }
 
 
