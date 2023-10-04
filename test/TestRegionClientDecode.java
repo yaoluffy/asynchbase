@@ -101,18 +101,25 @@ public class TestRegionClientDecode extends BaseTestRegionClient {
     class RpcMock {
       int attempt = 0;
     }
+    resetMockClient();  // Set up the mock client
 
-    RpcMock rpc = new RpcMock();
-    assertEquals(0, rpc.attempt);  // Ensure the attempt starts at 0
+    // Create a mock RPC with an attempt counter
+    final RpcMock rpc = new RpcMock();
+    Whitebox.setInternalState(region_client, "rpc", rpc);
 
-    RegionClient region_client = mock(RegionClient.class);
-    when(region_client.isAlive()).thenReturn(true);
+    // Get an instance of RetryTimer
+    RegionClient.RetryTimer retryTimer = Whitebox.invokeConstructor(
+            RegionClient.RetryTimer.class, region_client
+    );
 
-    RegionClient.RetryTimer retryTimer = region_client.new RetryTimer();
+    // Before invoking, attempt should be 0
+    assertEquals(0, rpc.attempt);
 
+    // Invoke the run method
     retryTimer.run(mock(Timeout.class));
 
-    assertEquals(1, rpc.attempt);  // Ensure attempt was incremented
+    // After invoking, attempt should have incremented
+    assertEquals(1, rpc.attempt);
   }
   
   @Test
