@@ -94,6 +94,29 @@ public class TestRegionClientDecode extends BaseTestRegionClient {
     when(hbase_client.getDefaultRpcTimeout()).thenReturn(60000);
     timer.stop();
   }
+
+  @Test
+  public void testRpcAttemptIncrementedOnRetry() throws Exception {
+    // Mocked RPC object with just the portion we're concerned with
+    class RpcMock {
+      int attempt = 0;
+    }
+
+    RpcMock rpc = new RpcMock();
+    assertEquals(0, rpc.attempt);  // Ensure the attempt starts at 0
+
+    // Mocking isAlive method
+    PowerMockito.mockStatic(RegionClient.class);
+    when(RegionClient.isAlive()).thenReturn(true);
+
+    // Instantiate the RegionClient and its RetryTimer class
+    RegionClient region_client = new RegionClient();
+    RegionClient.RetryTimer retryTimer = region_client.new RetryTimer();
+
+    retryTimer.run(mock(Timeout.class));
+
+    assertEquals(1, rpc.attempt);  // Ensure attempt was incremented
+  }
   
   @Test
   public void goodGetRequest() throws Exception {
