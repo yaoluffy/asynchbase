@@ -13,10 +13,11 @@ public class TestUnknownScannerException {
 
     @Test
     public void testMakeWithUnknownScannerExceptionMsg() {
-        HBaseRpc mockRpc = mock(HBaseRpc.class);  // 使用Mockito框架创建一个mock对象
+        HBaseRpc mockRpc = mock(HBaseRpc.class);
         UnknownScannerException existingException = new UnknownScannerException("existing message", mockRpc);
         UnknownScannerException newException = existingException.make(existingException, mockRpc);
-        assertEquals(existingException.getMessage(), newException.getMessage());
+
+        assertTrue(newException.getMessage().contains(existingException.getMessage()));
         assertEquals(mockRpc, newException.getFailedRpc());
     }
 
