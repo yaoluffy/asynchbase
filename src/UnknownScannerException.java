@@ -43,7 +43,7 @@ implements HasFailedRpcException {
    * @param failed_rpc The RPC that caused this exception, if known, or null.
    */
   UnknownScannerException(final String msg, final HBaseRpc failed_rpc) {
-    super(msg + "\nCaused by RPC: " + failed_rpc);
+    super(msg + "\nCaused by RPC: " + failfed_rpc);
     this.failed_rpc = failed_rpc;
   }
 

@@ -95,19 +95,6 @@ public class TestRegionClientDecode extends BaseTestRegionClient {
     timer.stop();
   }
 
-//  @Test
-//  public void testRpcAttemptIncrementedOnRetry() throws Exception {
-//    final int id = 42;
-//    final GetRequest get = new GetRequest(TABLE, ROW);
-//    get.region = region;
-//    inflightTheRpc(id, get);
-//
-//    ChannelBuffer buffer = PBufResponses.generateException(id,
-//            remote_exception);
-//    assertNull(region_client.decode(ctx, chan, buffer, VOID));
-//  }
-
-
   @Test
   public void goodGetRequest() throws Exception {
     final int id = 42;
